@@ -69,10 +69,3 @@ The final decision tree highlights **Glucose and BMI** as the most influential p
 
 ![Decision Tree Visualization](figures/decision_tree.png)
 
-
-
-## Key Takeaways
-- Rigorous EDA is critical when working with medical datasets.
-- Treating missing or unrealistic values meaningfully improves model quality.
-- Decision Trees provide a strong balance between **performance and interpretability**.
-- Glucose and BMI are the most influential predictors of diabetes in this dataset.
