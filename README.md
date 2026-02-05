@@ -1,112 +1,78 @@
-# Data Science Project Boilerplate
+# Diabetes Prediction with Decision Trees
 
-This boilerplate is designed to kickstart data science projects by providing a basic setup for database connections, data processing, and machine learning model development. It includes a structured folder organization for your datasets and a set of pre-defined Python packages necessary for most data science tasks.
+## Project Overview
+This project addresses a supervised classification problem in a healthcare context: predicting whether a patient has diabetes based on diagnostic and demographic measurements. Beyond building a predictive model, the focus is on **data understanding, responsible data cleaning, and balancing predictive performance with interpretability**.
 
-## Structure
+## Dataset
+The dataset originates from the National Institute of Diabetes and Digestive and Kidney Diseases and contains 768 observations with the following variables:
 
-The project is organized as follows:
+- Pregnancies  
+- Glucose  
+- BloodPressure  
+- SkinThickness  
+- Insulin  
+- BMI  
+- DiabetesPedigreeFunction  
+- Age  
 
-- **`src/app.py`** → Main Python script where your project will run.
-- **`src/explore.ipynb`** → Notebook for exploration and testing. Once exploration is complete, migrate the clean code to `app.py`.
-- **`src/utils.py`** → Auxiliary functions, such as database connection.
-- **`requirements.txt`** → List of required Python packages.
-- **`models/`** → Will contain your SQLAlchemy model classes.
-- **`data/`** → Stores datasets at different stages:
-  - **`data/raw/`** → Raw data.
-  - **`data/interim/`** → Temporarily transformed data.
-  - **`data/processed/`** → Data ready for analysis.
+The target variable is **Outcome**, indicating the presence (1) or absence (0) of diabetes.
+
+**Source:**  
+https://breathecode.herokuapp.com/asset/internal-link?id=421&path=diabetes.csv
+
+## Exploratory Data Analysis (EDA)
+A comprehensive EDA was conducted to examine data quality, feature distributions, and relationships with the target variable.
+
+Key observations:
+- Several medical variables (Glucose, BloodPressure, SkinThickness, Insulin, BMI) contain **zero values**, which are biologically implausible and likely represent missing data.
+- The dataset is **moderately imbalanced**, with a higher proportion of non-diabetic patients.
+- **Glucose** shows the strongest separation between diabetic and non-diabetic patients, followed by **BMI, Age, and Pregnancies**.
+- Other variables present weaker discriminatory power.
+
+Univariate, multivariate, and correlation analyses guided feature treatment and modelling decisions.
+
+## Feature Engineering
+- Zero values in clinically impossible variables were replaced with the **median of non-zero observations**.
+- Outliers were identified using the **interquartile range (IQR)** method.
+- Two datasets were created:
+  - one retaining outliers
+  - one with outliers capped at calculated limits  
+
+Both versions were evaluated to assess their impact on model performance.
+
+## Modelling Strategy
+
+### Baseline Decision Trees
+Two baseline Decision Tree classifiers were trained:
+- using the dataset **with outliers**
+- using the dataset **without outliers**
+
+The dataset without outliers achieved higher accuracy (~0.75 vs ~0.73) and was selected for further modelling.
+
+### Impurity Criterion Comparison
+Both impurity measures were evaluated:
+- **Gini index**
+- **Entropy**
+
+The **Gini criterion** consistently outperformed entropy on this dataset and was selected.
+
+### Hyperparameter Optimisation
+Model performance was further improved using **GridSearchCV**, tuning:
+- `max_depth`
+- `min_samples_split`
+- `min_samples_leaf`
+
+The final optimised model achieved approximately **76% accuracy** on both cross-validation and the test set.
+
+## Model Interpretation
+The final decision tree highlights **Glucose and BMI** as the most influential predictors, followed by Age and Pregnancies. The model remains fully interpretable, making it suitable for contexts where **explainability is essential**.
+
+![Decision Tree Visualization](figures/decision_tree.png)
 
 
-## ⚡ Initial Setup in Codespaces (Recommended)
 
-No manual setup is required, as **Codespaces is automatically configured** with the predefined files created by the academy for you. Just follow these steps:
-
-1. **Wait for the environment to configure automatically**.
-   - All necessary packages and the database will install themselves.
-   - The automatically created `username` and `db_name` are in the **`.env`** file at the root of the project.
-2. **Once Codespaces is ready, you can start working immediately**.
-
-
-## 💻 Local Setup (Only if you can't use Codespaces)
-
-**Prerequisites**
-
-Make sure you have Python 3.11+ installed on your machine. You will also need pip to install the Python packages.
-
-**Installation**
-
-Clone the project repository to your local machine.
-
-Navigate to the project directory and install the required Python packages:
-
-```bash
-pip install -r requirements.txt
-```
-
-**Create a database (if necessary)**
-
-Create a new database within the Postgres engine by customizing and executing the following command:
-
-```bash
-$ psql -U postgres -c "DO \$\$ BEGIN 
-    CREATE USER my_user WITH PASSWORD 'my_password'; 
-    CREATE DATABASE my_database OWNER my_user; 
-END \$\$;"
-```
-Connect to the Postgres engine to use your database, manipulate tables, and data:
-
-```bash
-$ psql -U my_user -d my_database
-```
-
-Once inside PSQL, you can create tables, run queries, insert, update, or delete data, and much more!
-
-**Environment Variables**
-
-Create a .env file in the root directory of the project to store your environment variables, such as your database connection string:
-
-```makefile
-DATABASE_URL="postgresql://<USER>:<PASSWORD>@<HOST>:<PORT>/<DB_NAME>"
-
-#example
-DATABASE_URL="postgresql://my_user:my_password@localhost:5432/my_database"
-```
-
-## Running the Application
-
-To run the application, execute the app.py script from the root directory of the project:
-
-```bash
-python src/app.py
-```
-
-## Adding Models
-
-To add SQLAlchemy model classes, create new Python script files within the models/ directory. These classes should be defined according to your database schema.
-
-Example model definition (`models/example_model.py`):
-
-```py
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
-
-Base = declarative_base()
-
-class ExampleModel(Base):
-    __tablename__ = 'example_table'
-    id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(unique=True)
-```
-
-## Working with Data
-
-You can place your raw datasets in the data/raw directory, intermediate datasets in data/interim, and processed datasets ready for analysis in data/processed.
-
-To process data, you can modify the app.py script to include your data processing steps, using pandas for data manipulation and analysis.
-
-## Contributors
-
-This template was built as part of the [Data Science and Machine Learning Bootcamp](https://4geeksacademy.com/us/coding-bootcamps/datascience-machine-learning) by 4Geeks Academy by [Alejandro Sanchez](https://twitter.com/alesanchezr) and many other contributors. Learn more about [4Geeks Academy BootCamp programs](https://4geeksacademy.com/us/programs) here.
-
-Other templates and resources like this can be found on the school's GitHub page.
+## Key Takeaways
+- Rigorous EDA is critical when working with medical datasets.
+- Treating missing or unrealistic values meaningfully improves model quality.
+- Decision Trees provide a strong balance between **performance and interpretability**.
+- Glucose and BMI are the most influential predictors of diabetes in this dataset.
